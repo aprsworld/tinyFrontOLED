@@ -4,16 +4,30 @@
 
 #include <stdio.h>
 
+#define OLED_POWER_EN RPI_GPIO_P1_07 /* GPIO pin power enable is connected to, or -1 if not used */
+
 // Instantiate the display
 Adafruit_SSD1306 display;
 
 int main(int argc, char **argv) {
 	int i;
+
+	if ( -1 != OLED_POWER_EN ) {
+		/* turn on power to the display */
+		fprintf(stderr,"# turning on OLED display\n");
+		/* set GPIO 4 to output */
+		bcm2835_init();
+		bcm2835_gpio_fsel(OLED_POWER_EN, BCM2835_GPIO_FSEL_OUTP);
+		bcm2835_gpio_write(OLED_POWER_EN, HIGH);
+		bcm2835_delay(10);
+	}
 	
-	// I2C change parameters to fit to your LCD
-	if ( !display.init(OLED_I2C_RESET,2) ) {
+	/* I2C 128x32 */
+	if ( !display.init(2) ) {
 		exit(EXIT_FAILURE);
 	}
+
+
 
 	display.begin();
 	
@@ -91,9 +105,18 @@ int main(int argc, char **argv) {
 		fprintf(stderr,"# invalid number of arguements\n");
 	}
 
+
+#if 0
+	if ( -1 != OLED_POWER_EN ) {
+		/* turn on power to the display */
+		fprintf(stderr,"# turning off OLED display\n");
+		/* set GPIO 4 to output */
+		bcm2835_gpio_write(OLED_POWER_EN, LOW);
+	}
+#endif
+
 	// Free PI GPIO ports
 	display.close();
 
 }
-
 
